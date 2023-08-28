@@ -1,3 +1,5 @@
+use std::{fs::File, io::{Read, Write}};
+
 use anyhow::Result;
 
 use crate::models::{DBState, Epic, Story, Status};
@@ -13,11 +15,18 @@ struct JSONFileDatabase {
 
 impl Database for JSONFileDatabase {
   fn read_db(&self) -> Result<DBState> {
-    todo!()
+    let mut contents = String::new();
+    let mut file = File::open(&self.file_path)?;
+
+    file.read_to_string(&mut contents)?;
+    let data: DBState = serde_json::from_str(&contents)?;
+    Ok(data)
   }
 
   fn write_db(&self, db_state: &DBState) -> Result<()> {
-    todo!()
+    let mut file = File::options().read(true).write(true).open(&self.file_path)?;
+    file.write_all(&serde_json::to_vec(db_state)?)?;
+    Ok(())
   }
 }
 
@@ -92,7 +101,6 @@ mod tests {
       let read_result = db.read_db().unwrap();
 
       assert_eq!(write_result.is_ok(), true);
-      // TODO: fix this error by deriving appropriate traits for DBState
       assert_eq!(read_result, state);
     }
   }
