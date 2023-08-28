@@ -1,27 +1,46 @@
 pub enum Status {
-  // TODO: add fields
+  Closed,
+  InProgress,
+  Open,
+  Resolved
 }
 
 pub struct Epic {
-  // TODO: add fields
+  description: String,
+  name: String,
+  status: Status,
+  stories: Vec<i32>
 }
 
 impl Epic {
   pub fn new(name: String, description: String) -> Self {
-    todo!()
+    Epic {
+      description,
+      name,
+      status: Status::Open,
+      stories: vec![]
+    }
   }
 }
 
 pub struct Story {
-  // TODO: add fields
+  description: String,
+  name: String,
+  status: Status
 }
 
 impl Story {
   pub fn new(name: String, description: String) -> Self {
-    todo!()
+    Story {
+      description,
+      name,
+      status: Status::Open
+    }
   }
 }
 
 pub struct DBState {
-  // TODO: add fields
+  last_item_id: i32,
+  epics: Vec<Epic>,
+  stories: Vec<Story>
 }
