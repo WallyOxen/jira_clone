@@ -1,6 +1,6 @@
 use std::fs;
 
-use anyhow::Result;
+use anyhow::{ anyhow, Result };
 
 use crate::models::{DBState, Epic, Story, Status};
 
@@ -10,35 +10,96 @@ pub struct JiraDatabase {
 
 impl JiraDatabase {
   pub fn new(file_path: String) -> Self {
-    todo!()
+    JiraDatabase { database: Box::new(JSONFileDatabase { file_path }) }
   }
 
   pub fn read_db(&self) -> Result<DBState> {
-    todo!()
+    self.database.read_db()
   }
 
   pub fn create_epic(&self, epic: Epic) -> Result<u32> {
-    todo!()
+    let mut state = self.read_db()?;
+    let next_id = state.last_item_id + 1;
+
+    state.epics.insert(next_id, epic);
+    state.last_item_id = next_id;
+
+    self.database.write_db(&state)?;
+    Ok(next_id)
   }
 
   pub fn create_story(&self, story: Story, epic_id: u32) -> Result<u32> {
-      todo!()
+      let mut state = self.read_db()?;
+      let next_id = state.last_item_id + 1;
+
+      state
+        .epics
+        .get_mut(&epic_id)
+        .ok_or(anyhow!("unable to find epic"))?
+        .stories
+        .push(next_id);
+      state.stories.insert(next_id, story);
+      state.last_item_id = next_id;
+
+      self.database.write_db(&state)?;
+      Ok(next_id)
   }
 
   pub fn delete_epic(&self, epic_id: u32) -> Result<()> {
-      todo!()
+      let mut state = self.read_db()?;
+      
+      state
+        .epics
+        .get(&epic_id)
+        .ok_or(anyhow!("unable to find epic"))?
+        .stories
+        .iter()
+        .for_each(|story_id| {
+          state.stories.remove(&story_id);
+        });
+        state.epics.remove(&epic_id);
+
+      self.database.write_db(&state)?;
+      Ok(())
   }
 
   pub fn delete_story(&self,epic_id: u32, story_id: u32) -> Result<()> {
-      todo!()
+      let mut state = self.read_db()?;
+
+      let epic = state
+        .epics
+        .get_mut(&epic_id)
+        .ok_or(anyhow!("unable to find epic"))?;
+
+      let story_index = epic
+        .stories
+        .iter()
+        .position(|id| id == &story_id)
+        .ok_or(anyhow!("unable to find story in epic"))?;
+      epic.stories.remove(story_index);
+
+      state.stories.remove(&story_id);
+
+      self.database.write_db(&state)?;
+      Ok(())
   }
 
   pub fn update_epic_status(&self, epic_id: u32, status: Status) -> Result<()> {
-      todo!()
+      let mut state = self.read_db()?;
+
+      state.epics.get_mut(&epic_id).ok_or(anyhow!("unable to find epic"))?.status = status;
+
+      self.database.write_db(&state)?;
+      Ok(())
   }
 
   pub fn update_story_status(&self, story_id: u32, status: Status) -> Result<()> {
-      todo!()
+      let mut state = self.read_db()?;
+
+      state.stories.get_mut(&story_id).ok_or(anyhow!("unable to find story"))?.status = status;
+
+      self.database.write_db(&state)?;
+      Ok(())
   }
 }
 
@@ -81,14 +142,12 @@ pub mod test_utils {
 
   impl Database for MockDB {
       fn read_db(&self) -> Result<DBState> {
-          // TODO: fix this error by deriving the appropriate traits for Story
           let state = self.last_written_state.borrow().clone();
           Ok(state)
       }
 
       fn write_db(&self, db_state: &DBState) -> Result<()> {
           let latest_state = &self.last_written_state;
-          // TODO: fix this error by deriving the appropriate traits for DBState
           *latest_state.borrow_mut() = db_state.clone();
           Ok(())
       }
@@ -105,7 +164,6 @@ mod tests {
     let db = JiraDatabase { database: Box::new(MockDB::new()) };
     let epic = Epic::new("".to_owned(), "".to_owned());
 
-    // TODO: fix this error by deriving the appropriate traits for Epic
     let result = db.create_epic(epic.clone());
     
     assert_eq!(result.is_ok(), true);
@@ -142,7 +200,6 @@ mod tests {
 
       let epic_id = result.unwrap();
 
-      // TODO: fix this error by deriving the appropriate traits for Story
       let result = db.create_story(story.clone(), epic_id);
       assert_eq!(result.is_ok(), true);
 
