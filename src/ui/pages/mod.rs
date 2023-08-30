@@ -143,7 +143,7 @@ mod tests {
       let q = "q";
       let c = "c";
       let valid_epic_id = epic_id.to_string();
-      let invalid_epic_id = 999;
+      let invalid_epic_id = "999";
       let junk_input = "j983f2j";
       let junk_input_with_valid_prefix = "q983f2j";
       let input_with_trailing_white_spaces = "q\n";
@@ -151,6 +151,7 @@ mod tests {
       assert_eq!(page.handle_input(q).unwrap(), Some(Action::Exit));
       assert_eq!(page.handle_input(c).unwrap(), Some(Action::CreateEpic));
       assert_eq!(page.handle_input(&valid_epic_id).unwrap(), Some(Action::NavigateToEpicDetail { epic_id: 1 }));
+      assert_eq!(page.handle_input(invalid_epic_id).unwrap(), None);
       assert_eq!(page.handle_input(junk_input).unwrap(), None);
       assert_eq!(page.handle_input(junk_input_with_valid_prefix).unwrap(), None);
       assert_eq!(page.handle_input(input_with_trailing_white_spaces).unwrap(), None);
@@ -163,7 +164,7 @@ mod tests {
     #[test]
     fn draw_page_should_not_throw_error() {
       let db = Rc::new(JiraDatabase { database: Box::new(MockDB::new()) });
-      let epic_id = db.create_epic(Epic::new("".to_owned(), "".to_owned()));
+      let epic_id = db.create_epic(Epic::new("".to_owned(), "".to_owned())).unwrap();
 
       let page = EpicDetail { epic_id, db };
       assert_eq!(page.draw_page().is_ok(), true);
@@ -172,7 +173,7 @@ mod tests {
     #[test]
     fn handle_input_should_not_throw_error() {
       let db = Rc::new(JiraDatabase { database: Box::new(MockDB::new()) });
-      let epic_id = db.create_epic(Epic::new("".to_owned(), "".to_owned()));
+      let epic_id = db.create_epic(Epic::new("".to_owned(), "".to_owned())).unwrap();
 
       let page = EpicDetail { epic_id, db };
       assert_eq!(page.handle_input("").is_ok(), true);
@@ -199,7 +200,7 @@ mod tests {
       let u = "u";
       let d = "d";
       let c = "c";
-      let invalid_story_id = 999;
+      let invalid_story_id = "999";
       let junk_input = "j983f2j";
       let junk_input_with_valid_prefix = "p983f2j";
       let input_with_trailing_white_space = "p\n";
