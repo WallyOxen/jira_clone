@@ -49,6 +49,10 @@ impl Navigator {
       Action::DeleteEpic { epic_id } => {
         if (self.prompts.delete_epic)() {
           self.db.delete_epic(epic_id).with_context(|| anyhow!("failed to delete epic!"))?;
+
+          if !self.pages.is_empty() {
+            self.pages.pop();
+          }
         }
       },
       Action::CreateStory { epic_id } => {
@@ -65,6 +69,10 @@ impl Navigator {
       Action::DeleteStory { epic_id, story_id } => {
         if (self.prompts.delete_story)() {
           self.db.delete_story(epic_id, story_id).with_context(|| anyhow!("failed to delete story!"))?;
+
+          if !self.pages.is_empty() {
+            self.pages.pop();
+          }
         }
       },
       Action::Exit => {
