@@ -29,8 +29,8 @@ impl Page for HomePage {
     let epics = self.db.read_db()?.epics;
     for epic_id in epics.keys().sorted() {
       println!("{}|{}|{}",
-        get_column_string(&epic_id.to_string(), 11),
-        get_column_string(&epics[epic_id].name, 33),
+        get_column_string(&epic_id.to_string(), 12),
+        get_column_string(&epics[epic_id].name, 34),
         get_column_string(&epics[epic_id].status.to_string(), 17)
       );
     }
@@ -93,8 +93,8 @@ impl Page for EpicDetail {
 
       for story_id in epic.stories.iter().sorted() {
         println!("{}|{}|{}",
-          get_column_string(&story_id.to_string(), 11),
-          get_column_string(&stories[story_id].name, 34),
+          get_column_string(&story_id.to_string(), 12),
+          get_column_string(&stories[story_id].name, 35),
           get_column_string(&stories[story_id].status.to_string(), 17)
         )
       }
